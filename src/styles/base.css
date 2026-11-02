@@ -1,0 +1,146 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--graphite);
+  font: 400 16px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  cursor: var(--cursor), auto;
+}
+button, [role="slider"], [role="radio"], a { cursor: var(--cursor), pointer; }
+button:disabled { cursor: var(--cursor), not-allowed; }
+input[type="email"], input[type="text"] { cursor: text; }
+
+/* ── Paper grain: fine noise + a few big soft blotches. Fixed, never blocks clicks. ── */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 100; pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .17 0 0 0 0 .15 0 0 0 0 .12 0 0 0 .9 -.32'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .3 0 0 0 .5 -.18'/></filter><rect width='100%' height='100%' filter='url(%23b)'/></svg>");
+  opacity: 0.42;
+  transform: translateZ(0); /* own layer, no blending: keeps scrolling at 60fps */
+}
+
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; margin: 0; line-height: 1.05; }
+p { margin: 0; }
+button { font: inherit; color: inherit; }
+b { font-weight: 600; }
+.hand-note { font-family: var(--font-hand); font-size: 1.3rem; color: var(--graphite-soft); line-height: 1.15; }
+.money { color: var(--accent-ink); }
+/* big numbers can use the brighter pencil */
+.stat-value.money, .budget-value.money, .ruler-handle-value.money, .sheet-costs dd.total.money, .creator.is-on .fit-num { color: var(--accent); }
+.warn, .ok { color: var(--graphite); font-weight: 500; }
+:focus-visible { outline: 2px dashed var(--graphite); outline-offset: 4px; }
+
+/* ── rough.js shapes ── */
+.rbox { position: relative; isolation: isolate; }
+.rbox-svg { position: absolute; inset: 0; z-index: -1; overflow: visible; pointer-events: none; }
+.underlined { position: relative; display: inline-block; white-space: nowrap; }
+.scribble { position: absolute; left: -2px; right: -2px; bottom: -0.3em; height: 14px; pointer-events: none; }
+.scribble svg { display: block; overflow: visible; }
+.encircle { position: relative; display: inline-block; }
+.encircle-svg { position: absolute; left: -42px; top: -18px; overflow: visible; pointer-events: none; }
+
+/* ── Buttons ── */
+.btn {
+  border: 0; background: none; padding: 12px 24px; font-weight: 600; font-size: 1rem;
+  display: inline-flex; align-items: center; justify-content: center; min-height: 48px;
+  transition: transform var(--dur) var(--ease);
+}
+.btn .rp-fillSketch { transition: opacity var(--dur); opacity: 0.7; }
+.btn:not(:disabled):hover { transform: rotate(-0.8deg) translateY(-1px); }
+.btn:not(:disabled):hover .rp-fillSketch { opacity: 1; }
+.btn:disabled { color: var(--graphite-faint); }
+.btn-ghost { font-weight: 500; color: var(--graphite-soft); }
+.btn-ghost:not(:disabled):hover { color: var(--graphite); }
+
+/* ── Chips ── */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  border: 0; background: none; padding: 8px 16px; text-align: left; min-height: 40px;
+  transition: transform var(--dur) var(--ease);
+}
+.chip:hover { transform: rotate(0.6deg); }
+.chip .rp-fillSketch { opacity: 0.55; }
+.chip-label { font-weight: 500; display: block; }
+.chip.is-on .chip-label { font-weight: 600; }
+.chip-note { display: block; font-size: 0.82rem; color: var(--graphite-soft); }
+
+.field { display: grid; gap: 10px; }
+.field-label { font-weight: 600; font-size: 0.95rem; }
+.field-hint { font-size: 0.85rem; color: var(--graphite-soft); }
+
+/* ── Corridor (desktop) ── */
+.corridor { position: relative; }
+.corridor-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; overflow: clip; /* clip = focus can not scroll it sideways */ }
+.track { display: flex; height: 100%; width: max-content; will-change: transform; }
+.track > .room { width: var(--room-w); height: 100vh; flex: none; }
+
+/* ── Stack (mobile) ── */
+.stack > .room { min-height: 100svh; }
+.stack > .room.is-locked { min-height: 0; }
+
+/* ── Room frame ── */
+.room {
+  position: relative; display: flex; justify-content: center; align-items: center;
+  padding: 28px 64px calc(var(--map-h) + 20px) 168px;
+}
+.room-entrance { padding-left: 64px; }
+.room-inner { width: 100%; max-width: 1120px; max-height: 100%; display: grid; gap: 22px; }
+.room-head { display: grid; gap: 0; }
+.room-num { font-family: var(--font-hand); font-size: 1.35rem; color: var(--graphite-soft); line-height: 1; }
+.room-title { font-size: clamp(2.4rem, 3.6vw, 3.4rem); margin: 2px 0 18px; }
+.room-q { font-family: var(--font-serif); font-style: italic; font-size: 1.45rem; color: var(--graphite-soft); line-height: 1.1; }
+.room-body { display: grid; gap: 22px; }
+.lead { max-width: 62ch; }
+.next-door { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.next-hint { font-family: var(--font-hand); font-size: 1.3rem; color: var(--graphite-soft); }
+
+/* ── Doorway (left edge of each open room) ── */
+.doorway { position: absolute; left: 28px; top: 0; bottom: 0; width: 100px; pointer-events: none; }
+.doorway-wall { position: absolute; left: 45px; top: 0; width: 10px; height: 100%; }
+.doorway-wall path { vector-effect: non-scaling-stroke; }
+.doorway-frame { position: absolute; left: 0; top: calc(50% - 128px); width: 100px; height: 210px; perspective: 520px; }
+.doorway-frame-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.door-leaf { position: absolute; left: 5px; top: 5px; width: 90px; height: 200px; transform-origin: left center; transform: rotateY(-72deg); }
+.door-leaf-svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ── Locked room ── */
+.locked { display: flex; align-items: center; gap: 48px; }
+.closed-door { position: relative; width: 200px; flex: none; }
+.closed-door-svg { width: 100%; display: block; overflow: visible; }
+.closed-door-lock { position: absolute; right: 18px; top: 44%; }
+.closed-door.is-small { width: 92px; }
+.closed-door.is-small .closed-door-lock { right: 4px; }
+.locked-text { display: grid; gap: 4px; max-width: 22ch; }
+.locked-title { font-family: var(--font-serif); font-size: 2.6rem; line-height: 1; }
+.locked-note { font-family: var(--font-hand); font-size: 1.4rem; color: var(--graphite-soft); line-height: 1.15; }
+
+/* ── Map ── */
+.map {
+  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 20;
+  padding: 6px 14px 4px; max-width: calc(100vw - 16px);
+}
+.map ol { position: relative; list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
+.map-path { position: absolute; left: 0; top: 2px; pointer-events: none; z-index: -1; }
+.map button { border: 0; background: none; display: grid; justify-items: center; gap: 0; padding: 2px 6px; }
+.map button:disabled { opacity: 0.55; }
+.map-dot { width: 20px; height: 20px; display: grid; place-items: center; }
+.map-dot svg { overflow: visible; }
+.map-label { font-family: var(--font-hand); font-size: 1.1rem; line-height: 1.1; }
+.map-stop.is-here .map-label { color: var(--accent-ink); font-weight: 700; }
+.map-stop.is-locked .map-label { color: var(--graphite-soft); }
+
+@media (max-width: 1023px), (max-height: 599px) {
+  .room, .room-entrance { padding: 52px 16px 64px; border-bottom: 1px dashed var(--graphite-faint); }
+  .stack > .room.is-locked { padding: 28px 16px; }
+  .locked { gap: 20px; width: 100%; }
+  .locked-title { font-size: 1.9rem; }
+  .locked-note { font-size: 1.2rem; }
+  .map { padding: 4px 6px 2px; bottom: 6px; }
+  .map ol { gap: 0; }
+  .map button { padding: 2px 3px; }
+  .map-label { font-size: 0.95rem; }
+}

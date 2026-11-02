@@ -1,0 +1,56 @@
+/* ─────────────────────────────────────────────────────────────
+   Motion. Everything ≤ 0.6s, transform/opacity/stroke only (cheap to animate).
+   All of it switches off under prefers-reduced-motion (bottom of file).
+   ───────────────────────────────────────────────────────────── */
+
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes shade-in { from { opacity: 0; } }
+/* opacity only: a transform here left stale paint behind when rooms above changed height (mobile) */
+@keyframes rise { from { opacity: 0; } }
+
+/* Pencil lines draw themselves. pathLength=1 on every rough path, so 1 = the whole line. */
+.rp-path {
+  stroke-dasharray: 1;
+  animation: draw 0.55s cubic-bezier(0.45, 0.1, 0.3, 1) both;
+}
+/* Shading arrives just after the outline. */
+.rp-fillSketch, .rp-fillPath { animation: shade-in 0.35s 0.2s ease-out backwards; }
+
+/* Rooms you haven't reached yet keep their drawings hidden, so they draw in as you arrive. */
+.room.is-open:not(.is-seen) .room-inner .rough { visibility: hidden; }
+.room.is-open:not(.is-seen) .room-inner .rp { animation-play-state: paused; }
+.room.is-open:not(.is-seen) .room-inner { opacity: 0; }
+.room.is-open .room-inner { transition: opacity 0.4s ease-out; }
+
+/* Header + content lift in once you arrive. */
+.room.is-seen .room-head { animation: rise 0.45s ease-out both; }
+.room.is-seen .room-body,
+.room.is-seen .entrance { animation: rise 0.5s 0.08s ease-out both; }
+
+/* Doors swing open as you arrive (hinge on the left). */
+.door-leaf { transform: rotateY(0deg); transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1) 0.05s; }
+.room.is-seen .door-leaf { transform: rotateY(-72deg); }
+
+/* Locked padlock gives a tiny wobble on hover — "nope". */
+.locked:hover .closed-door-lock { animation: wobble 0.4s ease-in-out; }
+@keyframes wobble { 25% { transform: rotate(-8deg); } 75% { transform: rotate(6deg); } }
+
+/* Price marker + notes respond quickly. */
+.price-notes > * { animation: rise 0.25s ease-out both; }
+
+/* Coins: a little hop as they slide. */
+.jar-coins .coin-pile { transition: transform 0.55s cubic-bezier(0.3, 1.5, 0.5, 1); }
+
+/* Map dot for "you are here" pops slightly. */
+.map-stop.is-here .map-dot svg { transform: scale(1.1); transition: transform 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .rp-path { stroke-dasharray: none; }
+  .room.is-open:not(.is-seen) .room-inner { opacity: 1; }
+  .room.is-open:not(.is-seen) .room-inner .rough { visibility: visible; }
+}
