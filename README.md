@@ -25,7 +25,7 @@ This packs the whole app into one self-contained HTML file. The JS and CSS are i
 
 | What | Where |
 |---|---|
-| **All fake data and rules**: brand, goals, budget range, product types, the 3 creators, fit points, trust thresholds, fair-price band, deliverables per price, deal terms and their costs, result rates, verdict thresholds | `src/data.js` |
+| **All fake data and rules**: brand, goals, budget range, product types, the 4 creators, fit points, trust thresholds, fair-price band, deliverables per price, deal terms and their costs, result rates, verdict thresholds | `src/data.js` |
 | How scores, fair range, costs, results and the verdict sentence are calculated | `src/deal/derive.js` |
 | The shared deal state (what's stored, what resets when you go back) | `src/deal/DealContext.jsx` |
 | Room order, titles and questions | `src/deal/Nav.jsx` |
