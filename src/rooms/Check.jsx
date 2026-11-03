@@ -112,7 +112,10 @@ export default function Check() {
               {isBrand ? `${creator.handle} · ${num(creator.followers)} followers` : `${brand.product} · sells in ${regionList(brand.regions)}`}
             </div>
           </div>
-          <p className="hand-note check-hint">hover each part to see more</p>
+          <p className="hand-note check-hint">
+            {!isBrand && <span className="money">these figures are invented for the demo · </span>}
+            hover each part to see more
+          </p>
         </div>
 
         <div className="check-grid" key={partner.id}>
