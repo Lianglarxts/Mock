@@ -53,28 +53,6 @@ export function Doorway({ seedKey }) {
   );
 }
 
-// The Halo desk lamp, drawn on the entrance wall.
-export function Lamp() {
-  return (
-    <svg className="lamp" viewBox="0 0 260 300" aria-hidden="true">
-      {/* light rays */}
-      {[[176, 168, 158, 236], [196, 160, 196, 232], [214, 152, 234, 218]].map((l, i) => (
-        <Rough key={i} shape="line" args={l} stroke="accent" strokeWidth={1.6} seedKey={'ray' + i} opts={{ roughness: 1.6 }} />
-      ))}
-      <Rough shape="ellipse" args={[200, 262, 120, 22]} stroke="faint" fill="faint" seedKey="pool" opts={{ hachureGap: 6 }} />
-      {/* base + arm */}
-      <Rough shape="ellipse" args={[62, 270, 96, 20]} fill="soft" seedKey="base" strokeWidth={1.8} opts={{ hachureGap: 4 }} />
-      <Rough shape="linearPath" args={[[[62, 262], [92, 150], [168, 104]]]} strokeWidth={2.4} seedKey="arm" />
-      <Rough shape="circle" args={[92, 150, 12]} fill="graphite" fillStyle="solid" seedKey="joint" />
-      {/* shade */}
-      <Rough shape="polygon" args={[[[150, 92], [216, 120], [204, 158], [138, 122]]]} fill="faint" strokeWidth={1.8} seedKey="shade" opts={{ hachureGap: 4.5 }} />
-      <Rough shape="line" args={[171, 140, 210, 140]} stroke="accent" strokeWidth={2.2} seedKey="bulb" />
-      {/* the floor line */}
-      <Rough shape="line" args={[0, 282, 260, 282]} strokeWidth={1.3} seedKey="desk" />
-    </svg>
-  );
-}
-
 // A quick pencil tick.
 export function Tick({ color = 'accent', size = 28, seedKey = 'tick' }) {
   return (

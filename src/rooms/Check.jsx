@@ -1,8 +1,9 @@
 import { useDeal } from '../deal/DealContext.jsx';
-import { getCreator, num, trust } from '../deal/derive.js';
+import { dealAlignment, num, parties, partnerTrust, partyName, regionList } from '../deal/derive.js';
 import { useNav } from '../deal/Nav.jsx';
+import AlignBars from '../sketch/AlignBars.jsx';
+import { Avatar } from '../sketch/BrandArt.jsx';
 import { Encircle } from '../sketch/drawings.jsx';
-import Portrait from '../sketch/Portrait.jsx';
 import Ring from '../sketch/Ring.jsx';
 import { Rough, RoughBox } from '../sketch/rough.jsx';
 import { Btn } from '../sketch/ui.jsx';
@@ -18,74 +19,123 @@ function Part({ seedKey, label, children }) {
   );
 }
 
+function Bar({ value, k }) {
+  return (
+    <svg viewBox="0 0 200 22" className="fit-bar" aria-hidden="true">
+      <Rough shape="rectangle" args={[2, 3, 196, 16]} strokeWidth={1.4} seedKey={'bo' + k} />
+      <Rough shape="rectangle" args={[4, 5, 192 * value, 12]} stroke="graphite" fill="graphite" strokeWidth={0.6} seedKey={'bi' + k} opts={{ hachureGap: 2.6 }} />
+    </svg>
+  );
+}
+
+function Past({ items }) {
+  return (
+    <ul className="past">
+      {items.map((p) => (
+        <li key={p.brand || p.who}>
+          <span className={`past-mark ${p.good ? '' : 'is-bad'}`} aria-label={p.good ? 'went well' : 'went badly'}>{p.good ? '✓' : '✗'}</span>
+          <div>
+            <b>{p.brand || p.who}</b>
+            <div className="part-detail">{p.result}</div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Brand side: is this creator's audience real, and is it the audience you sell to?
+function CreatorParts({ c, t }) {
+  const realPct = Math.round(c.realFollowers * 100);
+  return (
+    <>
+      <Part seedKey={'p1' + c.id} label="Real followers">
+        <div className="ring-row">
+          <Ring real={c.realFollowers} seedKey={'ring' + c.id} />
+          <div>
+            <div className="part-value">{realPct}% real</div>
+            <div className="part-detail">{100 - realPct}% look fake or inactive<span className="money"> (red)</span>.</div>
+          </div>
+        </div>
+      </Part>
+      <Part seedKey={'p2' + c.id} label="Audience fit">
+        <Bar value={t.audience} k={c.id} />
+        <div className="part-value">{Math.round(t.audience * 100)}% look like your buyers</div>
+        <div className="part-detail">{c.audienceNote}</div>
+      </Part>
+      <Part seedKey={'p3' + c.id} label="Past campaigns"><Past items={c.past} /></Part>
+    </>
+  );
+}
+
+// Creator side: will this brand pay, let you do your thing, and do creators come back?
+function BrandParts({ b }) {
+  const paidPct = Math.round(b.paysOnTime * 100);
+  return (
+    <>
+      <Part seedKey={'p1' + b.id} label="Pays on time">
+        <div className="ring-row">
+          <Ring real={b.paysOnTime} seedKey={'ring' + b.id} />
+          <div>
+            <div className="part-value">{paidPct}% on time</div>
+            <div className="part-detail">{100 - paidPct}% of deals were paid late<span className="money"> (red)</span>.</div>
+          </div>
+        </div>
+      </Part>
+      <Part seedKey={'p2' + b.id} label="Creators who'd work with them again">
+        <Bar value={b.rehire} k={b.id} />
+        <div className="part-value">{Math.round(b.rehire * 100)}% would again</div>
+        <div className="part-detail">{b.about}</div>
+      </Part>
+      <Part seedKey={'p3' + b.id} label="Past creator deals"><Past items={b.past} /></Part>
+    </>
+  );
+}
+
 export default function Check() {
   const { deal, dispatch } = useDeal();
   const { goTo } = useNav();
-  const c = getCreator(deal.creatorId);
-  if (!c) return <Room index={3} />;
-  const t = trust(c);
-  const realPct = Math.round(c.realFollowers * 100);
-  const fitPct = Math.round(c.audienceFit * 100);
-  const first = c.name.split(' ')[0];
+  const { partner, brand, creator, isBrand } = parties(deal);
+  if (!partner) return <Room index={3} />;
+  const t = partnerTrust(deal);
+  const a = dealAlignment(deal);
+  const name = partyName(partner);
 
   return (
     <Room index={3}>
       <div className="room-body check">
         <div className="check-who">
-          <RoughBox className="frame small" seedKey={'chk' + c.id} inset={2}><Portrait creator={c} /></RoughBox>
+          <RoughBox className="frame small" seedKey={'chk' + partner.id} inset={2}><Avatar party={partner} /></RoughBox>
           <div>
-            <div className="creator-name">{c.name}</div>
-            <div className="creator-meta">{c.handle} · {num(c.followers)} followers</div>
+            <div className="creator-name">{partner.name}</div>
+            <div className="creator-meta">
+              {isBrand ? `${creator.handle} · ${num(creator.followers)} followers` : `${brand.product} · sells in ${regionList(brand.regions)}`}
+            </div>
           </div>
           <p className="hand-note check-hint">hover each part to see more</p>
         </div>
 
-        <div className="check-grid" key={c.id}>
-          <Part seedKey={'p1' + c.id} label="Real followers">
-            <div className="ring-row">
-              <Ring real={c.realFollowers} seedKey={'ring' + c.id} />
-              <div>
-                <div className="part-value">{realPct}% real</div>
-                <div className="part-detail">{100 - realPct}% look fake or inactive<span className="money"> (red)</span>.</div>
-              </div>
-            </div>
-          </Part>
-
-          <Part seedKey={'p2' + c.id} label="Audience fit">
-            <svg viewBox="0 0 200 22" className="fit-bar" aria-hidden="true">
-              <Rough shape="rectangle" args={[2, 3, 196, 16]} strokeWidth={1.4} seedKey={'bo' + c.id} />
-              <Rough shape="rectangle" args={[4, 5, 192 * c.audienceFit, 12]} stroke="graphite" fill="graphite" strokeWidth={0.6} seedKey={'bi' + c.id} opts={{ hachureGap: 2.6 }} />
-            </svg>
-            <div className="part-value">{fitPct}% look like your buyers</div>
-            <div className="part-detail">{c.audienceNote}</div>
-          </Part>
-
-          <Part seedKey={'p3' + c.id} label="Past campaigns">
-            <ul className="past">
-              {c.past.map((p) => (
-                <li key={p.brand}>
-                  <span className={`past-mark ${p.good ? '' : 'is-bad'}`} aria-label={p.good ? 'went well' : 'went badly'}>{p.good ? '✓' : '✗'}</span>
-                  <div>
-                    <b>{p.brand}</b>
-                    <div className="part-detail">{p.result}</div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Part>
+        <div className="check-grid" key={partner.id}>
+          {isBrand ? <CreatorParts c={creator} t={t} /> : <BrandParts b={brand} />}
         </div>
 
-        <div className="trust" key={"t" + c.id}>
+        <details className="check-align" key={'a' + partner.id}>
+          <summary><span className="part-label">Where you line up</span> <span className="hand-note">{a.score}/100 · {a.success}% likely to work</span></summary>
+          <AlignBars rows={a.rows} seedKey={'cab' + partner.id} detail />
+        </details>
+
+        <div className="trust" key={'t' + partner.id}>
           <span className="trust-label">Trust:</span>{' '}
-          <Encircle seedKey={'tr' + c.id} color={t.word === 'Strong' ? 'graphite' : 'accent'}>
+          <Encircle seedKey={'tr' + partner.id} color={t.word === 'Strong' ? 'graphite' : 'accent'}>
             <span className="trust-word">{t.word}</span>
           </Encircle>
           {t.word === 'Low' && <span className="hand-note">Risky. You can still go back and pick someone else.</span>}
+          {t.word === 'Okay' && !isBrand && <span className="hand-note">New brand, short track record. The jar protects you.</span>}
         </div>
 
         <div className="next-door">
-          <Btn onClick={() => { dispatch({ type: 'confirmCheck' }); goTo(4); }} seedKey="trust-btn">I trust {first} →</Btn>
-          <Btn variant="ghost" onClick={() => goTo(2)} seedKey="pick-other">Pick someone else</Btn>
+          <Btn onClick={() => { dispatch({ type: 'confirmCheck' }); goTo(4); }} seedKey="trust-btn">I trust {name} →</Btn>
+          <Btn variant="ghost" onClick={() => goTo(2)} seedKey="pick-other">Pick {isBrand ? 'someone' : 'a brand'} else</Btn>
         </div>
       </div>
     </Room>

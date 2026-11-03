@@ -6,7 +6,7 @@ import { Rough, useSize } from './rough.jsx';
 const BODY_H = 56;
 
 // Draggable hand-drawn ruler. value = null means "not set yet" (marker shown faded in the middle).
-export default function Ruler({ range, value, onChange, budget, seedKey = 'ruler' }) {
+export default function Ruler({ range, value, onChange, budget, budgetLabel = 'your budget', ariaLabel = 'Your offer', seedKey = 'ruler' }) {
   const trackRef = useRef(null);
   const [boxRef, { w }] = useSize();
   const span = range.max - range.min;
@@ -52,7 +52,7 @@ export default function Ruler({ range, value, onChange, budget, seedKey = 'ruler
         onPointerMove={onMove}
         role="slider"
         tabIndex={0}
-        aria-label="Your offer"
+        aria-label={ariaLabel}
         aria-valuemin={range.min}
         aria-valuemax={range.max}
         aria-valuenow={shown}
@@ -70,7 +70,7 @@ export default function Ruler({ range, value, onChange, budget, seedKey = 'ruler
         <span className="ruler-fair-label hand-note" style={{ left: `${(lowPct + highPct) / 2}%` }}>fair range</span>
         <span className="ruler-edge money" style={{ left: `${lowPct}%` }}>{money(range.low)}</span>
         <span className="ruler-edge money" style={{ left: `${highPct}%` }}>{money(range.high)}</span>
-        {showBudget && <span className="ruler-budget hand-note" style={{ left: `${pct(budget)}%` }}>your budget</span>}
+        {showBudget && <span className="ruler-budget hand-note" style={{ left: `${pct(budget)}%` }}>{budgetLabel}</span>}
 
         <div className={`ruler-handle ${value == null ? 'is-ghost' : ''}`} style={{ left: `${pct(shown)}%` }}>
           <svg width="26" height="88" viewBox="0 0 26 88" className="ruler-handle-svg" aria-hidden="true">

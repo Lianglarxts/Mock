@@ -1,23 +1,24 @@
 import { money } from '../deal/derive.js';
-import Portrait from './Portrait.jsx';
+import { Avatar } from './BrandArt.jsx';
 import { Rough } from './rough.jsx';
 
-const SPOTS = ['you', 'jar', 'creator'];
+const SPOTS = ['payer', 'jar', 'payee'];
 const COINS = [[-16, 0], [0, 0], [16, 0], [-8, -11], [8, -11]];
 
-// You → the jar → the creator. One pile of coins slides to whoever holds the money now.
-export default function Jar({ holder, amount, creator }) {
+// Brand → the jar → the creator. One pile of coins slides to whoever holds the money now.
+// payer / payee: { label, party } — party is drawn; a missing party draws a wallet (you, the brand).
+export default function Jar({ holder, amount, payer, payee }) {
   const spot = SPOTS.indexOf(holder);
-  const first = creator.name.split(' ')[0];
+  const who = { payer: payer.label, jar: 'the jar', payee: payee.label }[holder];
   return (
-    <div className="jar-row" aria-live="polite" aria-label={`Money is with: ${holder === 'creator' ? first : holder === 'jar' ? 'the jar' : 'you'}`}>
-      <div className={`jar-spot ${holder === 'you' ? 'has-coins' : ''}`}>
+    <div className="jar-row" aria-live="polite" aria-label={`Money is with: ${who}`}>
+      <div className={`jar-spot ${holder === 'payer' ? 'has-coins' : ''}`}>
         <svg viewBox="0 0 100 90" className="jar-art" aria-hidden="true">
           <Rough shape="rectangle" args={[12, 34, 76, 46]} fill="paperDark" fillStyle="solid" strokeWidth={1.6} seedKey="wallet" />
           <Rough shape="path" args={['M12 46 L88 46']} seedKey="wallet-flap" />
           <Rough shape="circle" args={[78, 58, 8]} seedKey="wallet-clasp" />
         </svg>
-        <div className="jar-label">You</div>
+        <div className="jar-label">{payer.label}</div>
       </div>
       <div className={`jar-spot ${holder === 'jar' ? 'has-coins' : ''}`}>
         <svg viewBox="0 0 100 90" className="jar-art" aria-hidden="true">
@@ -27,9 +28,9 @@ export default function Jar({ holder, amount, creator }) {
         </svg>
         <div className="jar-label">The jar</div>
       </div>
-      <div className={`jar-spot ${holder === 'creator' ? 'has-coins' : ''}`}>
-        <div className="jar-art jar-creator"><Portrait creator={creator} /></div>
-        <div className="jar-label">{first}</div>
+      <div className={`jar-spot ${holder === 'payee' ? 'has-coins' : ''}`}>
+        <div className="jar-art jar-creator"><Avatar party={payee.party} /></div>
+        <div className="jar-label">{payee.label}</div>
       </div>
 
       {/* the coins: one layer that slides between the three spots */}
